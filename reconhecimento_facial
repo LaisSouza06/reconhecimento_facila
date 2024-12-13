@@ -1,0 +1,55 @@
+import cv2
+import numpy as np
+import face_recognition
+from matplotlib import pyplot as plt
+
+# Carregar o classificador pré-treinado para detecção de faces do OpenCV
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Função para capturar vídeo da webcam
+def capturar_video():
+    cap = cv2.VideoCapture(0)  # Abertura da webcam (0 por padrão)
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        # Converte a imagem de BGR para RGB
+        rgb_frame = frame[:, :, ::-1]
+        
+        # Detecta as faces na imagem
+        face_locations = face_recognition.face_locations(rgb_frame)
+        
+        # Para cada face detectada, faça o reconhecimento e exibição
+        for (top, right, bottom, left) in face_locations:
+            # Desenha um retângulo ao redor da face
+            cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+            
+            # Pode adicionar a lógica de reconhecimento de face aqui (se houver uma base de dados de faces)
+            face_encoding = face_recognition.face_encodings(rgb_frame, [(top, right, bottom, left)])
+            
+            if face_encoding:
+                # Comparar com uma base de dados prévia de faces
+                # Exemplo simples: comparação direta com uma face armazenada
+                # Face Database Simulation (substitua por lógica real de base de dados)
+                known_face_encodings = [np.random.rand(128)]  # Exemplo com face fictícia
+                matches = face_recognition.compare_faces(known_face_encodings, face_encoding[0])
+                
+                if True in matches:
+                    cv2.putText(frame, "Face Reconhecida!", (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                else:
+                    cv2.putText(frame, "Desconhecida", (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+        # Exibe o vídeo com o retângulo e a descrição
+        cv2.imshow('Detecção e Reconhecimento de Faces', frame)
+        
+        # Encerra com a tecla 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+
+# Chama a função para capturar vídeo e realizar a detecção
+capturar_video()
